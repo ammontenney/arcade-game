@@ -1,3 +1,18 @@
+/*
+TODO: add edge boundaries
+TODO: animate bug
+TODO: collisoin detection
+TODO: reset game
+TODO: enable multi-key press
+*/
+
+// Constant variables
+var XMIN = -17,
+    YMIN = -13,
+    XMAX = 420,
+    YMAX = 405
+    XY_INCREMENT = 2;
+
 // Enemies our player must avoid
 var Enemy = function() {
     // Variables applied to each of our instances go here,
@@ -39,14 +54,30 @@ Player.prototype.update = function() {
 
 Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, 100, 40);
+
+    ctx.fillStyle = 'black';
+    ctx.font = '14px Monospace';
+    ctx.fillText('x: '+this.x , 5, 19);
+    ctx.fillText('y: '+this.y , 5, 33);
 };
 
 Player.prototype.handleInput = function(key) {
-    if (key === 'left'){this.x--;}
-    else if (key === 'right'){this.x++;}
-    else if (key === 'up'){this.y--;}
-    else if (key === 'down'){this.y++;}
+    if (key === 'left'){this.x-=XY_INCREMENT;}
+    else if (key === 'right'){this.x+=XY_INCREMENT;}
+    else if (key === 'up'){this.y-=XY_INCREMENT;}
+    else if (key === 'down'){this.y+=XY_INCREMENT;}
+    checkMinMax(this);
 };
+
+function checkMinMax(p) {
+    if (p.x < XMIN) {p.x=XMIN;}
+    if (p.x > XMAX) {p.x=XMAX;}
+
+    if (p.y < YMIN) {p.y=YMIN;}
+    if (p.y > YMAX) {p.y=YMAX;}
+}
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
