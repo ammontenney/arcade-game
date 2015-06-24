@@ -45,10 +45,11 @@ var Player = function(){
     this.sprite = 'images/char-boy.png';
     this.x = 200;
     this.y = 200;
+    this.ppSec = 120; // speed of player movement in pixels per second
 };
 
 Player.prototype.update = function(dt) {
-    player.handleInput(keyStates);
+    player.handleInput(dt);
 };
 
 Player.prototype.render = function() {
@@ -56,18 +57,20 @@ Player.prototype.render = function() {
 
 };
 
-Player.prototype.handleInput = function(keys) {
-    if (keys[LEFT]) {
-        this.x -= XY_INCREMENT;
+Player.prototype.handleInput = function(dt) {
+    var incr = this.ppSec * dt;
+
+    if (keyStates[LEFT]) {
+        this.x -= incr;
     }
-    if (keys[RIGHT]) {
-        this.x += XY_INCREMENT;
+    if (keyStates[RIGHT]) {
+        this.x += incr;
     }
-    if (keys[UP]) {
-        this.y -= XY_INCREMENT;
+    if (keyStates[UP]) {
+        this.y -= incr;
     }
-    if (keys[DOWN]) {
-        this.y += XY_INCREMENT;
+    if (keyStates[DOWN]) {
+        this.y += incr;
     }
 
     checkMinMax(this);

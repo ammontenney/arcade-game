@@ -108,7 +108,7 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update();
+        player.update(dt);
     }
 
     /* This function initially draws the "game level", it will then call
@@ -161,8 +161,8 @@ var Engine = (function(global) {
 
         ctx.fillStyle = 'black';
         ctx.font = '14px Monospace';
-        ctx.fillText('x: '+player.x , 5, 19);
-        ctx.fillText('y: '+player.y , 5, 33);
+        ctx.fillText('x: '+player.x.toFixed(0) , 5, 19);
+        ctx.fillText('y: '+player.y.toFixed(0) , 5, 33);
 
         ctx.fillText('fps: ' + fps.toFixed(1), 70, 19);
     }
