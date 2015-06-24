@@ -1,8 +1,8 @@
 /*
 TODO: animate bug
+    TODO: randomize y value on position reset
 TODO: collisoin detection
 TODO: reset game
-TODO: enable multi-key press
 */
 
 // Constant variables
@@ -12,6 +12,8 @@ var XMIN = -17,
     YMAX = 405
     XY_INCREMENT = 1;
 
+var E_XMIN = -100;
+var E_XMAX = 505;
 // Enemies our player must avoid
 var Enemy = function() {
     // Variables applied to each of our instances go here,
@@ -20,8 +22,9 @@ var Enemy = function() {
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
-    this.x = 100;
-    this.y = 100;
+    this.x = -100;
+    this.y = 60;
+    this.ppSec = 90;
 }
 
 // Update the enemy's position, required method for game
@@ -30,6 +33,14 @@ Enemy.prototype.update = function(dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
+    var incr = this.ppSec * dt;
+    this.x += incr;
+    checkEnemyMinMax(this);
+}
+
+function checkEnemyMinMax(e) {
+    if (e.x < E_XMIN) {e.x = E_XMIN;}
+    if (e.x > E_XMAX) {e.x = E_XMIN;}
 }
 
 // Draw the enemy on the screen, required method for game
@@ -73,10 +84,10 @@ Player.prototype.handleInput = function(dt) {
         this.y += incr;
     }
 
-    checkMinMax(this);
+    checkPlayerMinMax(this);
 };
 
-function checkMinMax(p) {
+function checkPlayerMinMax(p) {
     if (p.x < XMIN) {p.x=XMIN;}
     if (p.x > XMAX) {p.x=XMAX;}
 
