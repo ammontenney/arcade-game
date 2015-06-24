@@ -81,6 +81,20 @@ var Engine = (function(global) {
     function update(dt) {
         updateEntities(dt);
         // checkCollisions();
+        updateStats(dt);
+    }
+
+    var fpsTime = 0.0,
+        fpsFrames = 0,
+        fps = 0.0;
+    function updateStats(dt) {
+        fpsTime += dt;
+        fpsFrames++;
+        if (fpsTime>1.0){
+            fps = fpsFrames / fpsTime;
+            fpsTime = 0;
+            fpsFrames = 0;
+        }
     }
 
     /* This is called by the update function  and loops through all of the
@@ -136,8 +150,21 @@ var Engine = (function(global) {
             }
         }
 
-
         renderEntities();
+
+        renderStats();
+    }
+
+    function renderStats() {
+        ctx.fillStyle = 'gray';
+        ctx.fillRect(0, 0, 150, 40);
+
+        ctx.fillStyle = 'black';
+        ctx.font = '14px Monospace';
+        ctx.fillText('x: '+player.x , 5, 19);
+        ctx.fillText('y: '+player.y , 5, 33);
+
+        ctx.fillText('fps: ' + fps.toFixed(1), 70, 19);
     }
 
     /* This function is called by the render function and is called on each game

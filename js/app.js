@@ -1,5 +1,4 @@
 /*
-TODO: add edge boundaries
 TODO: animate bug
 TODO: collisoin detection
 TODO: reset game
@@ -54,20 +53,23 @@ Player.prototype.update = function() {
 
 Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, 100, 40);
 
-    ctx.fillStyle = 'black';
-    ctx.font = '14px Monospace';
-    ctx.fillText('x: '+this.x , 5, 19);
-    ctx.fillText('y: '+this.y , 5, 33);
 };
 
-Player.prototype.handleInput = function(key) {
-    if (key === 'left'){this.x-=XY_INCREMENT;}
-    else if (key === 'right'){this.x+=XY_INCREMENT;}
-    else if (key === 'up'){this.y-=XY_INCREMENT;}
-    else if (key === 'down'){this.y+=XY_INCREMENT;}
+Player.prototype.handleInput = function(keys) {
+    if (keys[LEFT]) {
+        this.x -= XY_INCREMENT;
+    }
+    if (keys[RIGHT]) {
+        this.x += XY_INCREMENT;
+    }
+    if (keys[UP]) {
+        this.y -= XY_INCREMENT;
+    }
+    if (keys[DOWN]) {
+        this.y += XY_INCREMENT;
+    }
+
     checkMinMax(this);
 };
 
@@ -88,13 +90,30 @@ var player = new Player();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keydown', function(e) {
-    var allowedKeys = {
-        37: 'left',
-        38: 'up',
-        39: 'right',
-        40: 'down'
-    };
 
-    player.handleInput(allowedKeys[e.keyCode]);
+// document.addEventListener('keydown', function(e) {
+//     var allowedKeys = {
+//         37: 'left',
+//         38: 'up',
+//         39: 'right',
+//         40: 'down'
+//     };
+//
+//     player.handleInput(allowedKeys[e.keyCode]);
+// });
+
+var LEFT = 37,
+    UP = 38,
+    RIGHT = 39,
+    DOWN = 40;
+var keyStates = {LEFT:false, RIGHT:false, UP:false, DOWN:false};
+
+document.addEventListener('keydown', function(e){
+    keyStates[e.keyCode] = true;
+    player.handleInput(keyStates);
+});
+
+document.addEventListener('keyup', function(e){
+    keyStates[e.keyCode] = false;
+    player.handleInput(keyStates);
 });
