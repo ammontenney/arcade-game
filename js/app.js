@@ -10,7 +10,7 @@ var XMIN = -17,
     YMIN = -13,
     XMAX = 420,
     YMAX = 405
-    XY_INCREMENT = 2;
+    XY_INCREMENT = 1;
 
 // Enemies our player must avoid
 var Enemy = function() {
@@ -47,8 +47,8 @@ var Player = function(){
     this.y = 200;
 };
 
-Player.prototype.update = function() {
-
+Player.prototype.update = function(dt) {
+    player.handleInput(keyStates);
 };
 
 Player.prototype.render = function() {
@@ -91,17 +91,6 @@ var player = new Player();
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
 
-// document.addEventListener('keydown', function(e) {
-//     var allowedKeys = {
-//         37: 'left',
-//         38: 'up',
-//         39: 'right',
-//         40: 'down'
-//     };
-//
-//     player.handleInput(allowedKeys[e.keyCode]);
-// });
-
 var LEFT = 37,
     UP = 38,
     RIGHT = 39,
@@ -110,10 +99,8 @@ var keyStates = {LEFT:false, RIGHT:false, UP:false, DOWN:false};
 
 document.addEventListener('keydown', function(e){
     keyStates[e.keyCode] = true;
-    player.handleInput(keyStates);
 });
 
 document.addEventListener('keyup', function(e){
     keyStates[e.keyCode] = false;
-    player.handleInput(keyStates);
 });
