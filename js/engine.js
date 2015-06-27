@@ -80,7 +80,7 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions();
         updateStats(dt);
     }
 
@@ -111,6 +111,26 @@ var Engine = (function(global) {
     function updateEntities(dt) {
         allEntities.forEach(function(entity) {
             entity.update(dt);
+        });
+    }
+
+    function checkCollisions() {
+        var pBox = calcBox(player);
+        checkWaterCollision(pBox);
+        checkEntityCollisions(pBox);
+    }
+
+    var waterBox = {'x':0, 'y':0, 'width':505, 'height':130};
+    function checkWaterCollision(pBox) {
+        if (boxCollision(pBox, waterBox)) { reset(); }
+    }
+
+    function checkEntityCollisions(pBox) {
+        allEntities.forEach(function(entity) {
+            if (entity === player) { return; }
+
+            var box = calcBox(entity);
+            if (boxCollision(pBox, box)) { reset(); }
         });
     }
 
@@ -155,7 +175,8 @@ var Engine = (function(global) {
 
         renderEntities();
 
-        renderStats();
+        // renderStats();
+        // renderBoxes();
     }
 
     function renderStats() {
@@ -182,15 +203,36 @@ var Engine = (function(global) {
         allEntities.forEach(function(entity) {
             entity.render();
         });
+
+
+    }
+
+    function renderBoxes() {
+        ctx.save();
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = '1';
+
+        allEntities.forEach(function(entity) {
+            var box = calcBox(entity);
+            ctx.beginPath();
+            ctx.rect(box.x, box.y, box.width, box.height);
+            ctx.stroke();
+        });
+
+        ctx.beginPath();
+        ctx.rect(waterBox.x, waterBox.y, waterBox.width, waterBox.height);
+        ctx.stroke();
+
+        ctx.restore();
     }
 
     // Use this to compare and sort all the entities so that we can draw them
     // on the screen in the correct order. This way those that are in back aren't
     // drawn over those that are in the front.
     function compareEntities(a,b) {
-        if (a.y < b.y) { return -1;}
-        if (a.y > b.y) { return 1;}
-        if (a.y === b.y) { return 0;}
+        if (a.y < b.y) { return LT;}
+        if (a.y > b.y) { return GT;}
+        if (a.y === b.y) { return EQ;}
     }
 
     /* This function does nothing but it could have been a good place to
@@ -198,7 +240,10 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+        allEntities.forEach( function(entity){
+            if (player === entity) { resetPlayer(entity); }
+            else { resetEnemy(entity); }
+        });
     }
 
     /* Go ahead and load all of the images we know we're going to need to
