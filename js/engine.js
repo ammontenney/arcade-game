@@ -161,8 +161,8 @@ var Engine = (function(global) {
 
         ctx.fillStyle = 'black';
         ctx.font = '14px Monospace';
-        ctx.fillText('x: '+player.x.toFixed(0) , 5, 19);
-        ctx.fillText('y: '+player.y.toFixed(0) , 5, 33);
+        ctx.fillText('x: '+ player.x.toFixed(0) , 5, 19);
+        ctx.fillText('y: '+ player.y.toFixed(0) , 5, 33);
 
         ctx.fillText('fps: ' + fps.toFixed(1), 70, 19);
     }
@@ -198,7 +198,8 @@ var Engine = (function(global) {
         'images/stone-block.png',
         'images/water-block.png',
         'images/grass-block.png',
-        'images/enemy-bug.png',
+        'images/enemy-bug-r.png',
+        'images/enemy-bug-l.png',
         'images/char-boy.png'
     ]);
     Resources.onReady(init);
