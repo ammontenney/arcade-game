@@ -84,9 +84,13 @@ var Engine = (function(global) {
         updateStats(dt);
     }
 
+    // This is to track the FPS at which the game is refershing
+    // I added this just because I wanted to know how the browser
+    // was performing. :)
     var fpsTime = 0.0,
         fpsFrames = 0,
         fps = 0.0;
+
     function updateStats(dt) {
         fpsTime += dt;
         fpsFrames++;
@@ -105,10 +109,9 @@ var Engine = (function(global) {
      * render methods.
      */
     function updateEntities(dt) {
-        allEnemies.forEach(function(enemy) {
-            enemy.update(dt);
+        allEntities.forEach(function(entity) {
+            entity.update(dt);
         });
-        player.update(dt);
     }
 
     /* This function initially draws the "game level", it will then call
@@ -175,11 +178,19 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
-        allEnemies.forEach(function(enemy) {
-            enemy.render();
+        allEntities.sort(compareEntities);
+        allEntities.forEach(function(entity) {
+            entity.render();
         });
+    }
 
-        player.render();
+    // Use this to compare and sort all the entities so that we can draw them
+    // on the screen in the correct order. This way those that are in back aren't
+    // drawn over those that are in the front.
+    function compareEntities(a,b) {
+        if (a.y < b.y) { return -1;}
+        if (a.y > b.y) { return 1;}
+        if (a.y === b.y) { return 0;}
     }
 
     /* This function does nothing but it could have been a good place to
