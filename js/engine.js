@@ -175,8 +175,10 @@ var Engine = (function(global) {
 
         renderEntities();
 
-        // renderStats();
-        // renderBoxes();
+        if (DEBUG) {
+            renderStats();
+            renderBoxes();
+        }
     }
 
     function renderStats() {
@@ -241,8 +243,7 @@ var Engine = (function(global) {
      */
     function reset() {
         allEntities.forEach( function(entity){
-            if (player === entity) { resetPlayer(entity); }
-            else { resetEnemy(entity); }
+            entity.reset();
         });
     }
 

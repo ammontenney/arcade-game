@@ -3,6 +3,8 @@ TODO: collisoin detection
 TODO: reset game
 */
 
+var DEBUG = true;
+
 // Constant variables
 var XMIN = -17,
     YMIN = -13,
@@ -31,14 +33,14 @@ var Enemy = function() {
     this.boxWidth = 97;
     this.boxHeight = 32;
 
-    // additional properties initialized in resetEnemy(entity):
+    // additional properties initialized in this.reset():
     // this.speed = measured in pixels per second
     // this.direction = DIR_R or DIR_L
     // this.sprite = the image for the bug (E_RIGHT or E_LEFT)
     // this.x = horizontal position
     // this.y = vertical position
 
-    resetEnemy(this);
+    this.reset();
 
 }
 
@@ -47,7 +49,7 @@ var Enemy = function() {
 Enemy.prototype.update = function(dt) {
     var incr = this.speed * dt * this.direction;
     this.x += incr;
-    if (checkEnemyMinMax(this)) {resetEnemy(this);}
+    if (this.exceedsMinMax()) {this.reset();}
 }
 
 // Draw the enemy on the screen, required method for game
@@ -57,30 +59,30 @@ Enemy.prototype.render = function() {
 
 // for a new enemy or an enemy that has moved off the screen we reset
 // that enemy with new randomized properties
-function resetEnemy(e) {
-    e.y = randomEnemyY();
-    e.speed = randomSpeed();
-    e.direction = randomDirection();
+Enemy.prototype.reset = function () {
+    this.y = this.randomY();
+    this.speed = randomSpeed();
+    this.direction = this.randomDirection();
 
     // assign the sprite per the direction the enemy is going
-    e.sprite = (e.direction===DIR_R) ? E_RIGHT : E_LEFT;
+    this.sprite = (this.direction===DIR_R) ? E_RIGHT : E_LEFT;
 
     // move the enemy to the side opposite to the direction it is traveling
-    e.x = (e.direction===DIR_R) ? E_XMIN : E_XMAX;
+    this.x = (this.direction===DIR_R) ? E_XMIN : E_XMAX;
 }
 
 // determine if the enemy has moved off the screen
 // returns TRUE when the enemy needs to be reset
-function checkEnemyMinMax(e) {
-    if (e.x < E_XMIN || e.x > E_XMAX) {return true;}
+Enemy.prototype.exceedsMinMax = function () {
+    if (this.x < E_XMIN || this.x > E_XMAX) {return true;}
     return false;
 }
 
-function randomEnemyY() {
+Enemy.prototype.randomY = function () {
     return Math.random() * (E_YMAX - E_YMIN) + E_YMIN;
 }
 
-function randomDirection() {
+Enemy.prototype.randomDirection = function () {
     var rand = randomNumber(1,2);
     if (rand === 1){return 1}
     else {return -1;}
@@ -157,21 +159,21 @@ Player.prototype.handleInput = function(dt) {
         this.y += incr;
     }
 
-    checkPlayerMinMax(this);
+    this.checkMinMax();
 };
 
-function resetPlayer(p) {
-    p.x = 200;
-    p.y = 300;
+Player.prototype.reset = function() {
+    this.x = 200;
+    this.y = 300;
 }
 
 // this method keeps the player from going off the screen
-function checkPlayerMinMax(p) {
-    if (p.x < XMIN) {p.x=XMIN;}
-    if (p.x > XMAX) {p.x=XMAX;}
+Player.prototype.checkMinMax = function () {
+    if (this.x < XMIN) {this.x=XMIN;}
+    if (this.x > XMAX) {this.x=XMAX;}
 
-    if (p.y < YMIN) {p.y=YMIN;}
-    if (p.y > YMAX) {p.y=YMAX;}
+    if (this.y < YMIN) {this.y=YMIN;}
+    if (this.y > YMAX) {this.y=YMAX;}
 }
 
 // Now instantiate your objects.
