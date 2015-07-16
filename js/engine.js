@@ -46,7 +46,7 @@ var Engine = (function(global) {
          * our update function since it may be used for smooth animation.
          */
         update(dt);
-        render();
+        render(dt);
 
         /* Set our lastTime variable which is used to determine the time delta
          * for the next time this function is called.
@@ -80,8 +80,11 @@ var Engine = (function(global) {
      */
     function update(dt) {
         updateEntities(dt);
+        updateItems(dt);
         checkCollisions();
+
         updateStats(dt);
+        gemGenerator.update(dt);
     }
 
     // This is to track the FPS at which the game is refershing
@@ -114,15 +117,29 @@ var Engine = (function(global) {
         });
     }
 
+    function updateItems(dt){
+        var tempGems = [];
+        var gem = {};
+
+        while (gem = allGems.pop()){
+            gem.update(dt);
+            if (gem.expired()) {continue;}
+            tempGems.push(gem);
+        }
+
+        allGems = tempGems;
+    }
+
     function checkCollisions() {
         var pBox = calcBox(player);
         checkWaterCollision(pBox);
         checkEntityCollisions(pBox);
+        checkGemCollisions(pBox);
     }
 
     var waterBox = {'x':0, 'y':0, 'width':505, 'height':130};
     function checkWaterCollision(pBox) {
-        if (boxCollision(pBox, waterBox)) { reset(); }
+        if (boxesCollide(pBox, waterBox)) { reset(); }
     }
 
     function checkEntityCollisions(pBox) {
@@ -130,8 +147,24 @@ var Engine = (function(global) {
             if (entity === player) { return; }
 
             var box = calcBox(entity);
-            if (boxCollision(pBox, box)) { reset(); }
+            if (boxesCollide(pBox, box)) { reset(); }
         });
+    }
+
+    function checkGemCollisions(pBox){
+        var tempGems = [];
+        var gem = {};
+
+        while (gem = allGems.pop()){
+            var gemBox = calcBox(gem);
+            if (boxesCollide(pBox, gemBox)){
+                player.score += gem.value;
+                continue;
+            }
+            tempGems.push(gem);
+        }
+
+        allGems = tempGems;
     }
 
     /* This function initially draws the "game level", it will then call
@@ -140,7 +173,7 @@ var Engine = (function(global) {
      * they are flipbooks creating the illusion of animation but in reality
      * they are just drawing the entire screen over and over.
      */
-    function render() {
+    function render(dt) {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
@@ -173,6 +206,8 @@ var Engine = (function(global) {
             }
         }
 
+        renderItems();
+
         renderEntities();
 
         if (DEBUG) {
@@ -180,6 +215,25 @@ var Engine = (function(global) {
             renderBoxes();
         }
     }
+
+
+    function renderItems(){
+        allGems.sort(compareEntities);
+        allGems.forEach(function(gem) {
+            gem.render();
+        });
+    }
+    //
+    // var toggleRender = false;
+    // var itemTime = 0.0;
+    // function alternateRenderItems(dt){
+    //     itemTime += dt;
+    //     if (itemTime > 0.15){
+    //         itemTime = 0;
+    //         toggleRender = toggleRender ? false : true;
+    //     }
+    //     return toggleRender;
+    // }
 
     function renderStats() {
         ctx.fillStyle = 'gray';
@@ -232,9 +286,12 @@ var Engine = (function(global) {
     // on the screen in the correct order. This way those that are in back aren't
     // drawn over those that are in the front.
     function compareEntities(a,b) {
-        if (a.y < b.y) { return LT;}
-        if (a.y > b.y) { return GT;}
-        if (a.y === b.y) { return EQ;}
+        var boxA= calcBox(a);
+        var boxB= calcBox(b);
+
+        if (boxA.y < boxB.y) { return LT;}
+        if (boxA.y > boxB.y) { return GT;}
+        if (boxA.y === boxB.y) { return EQ;}
     }
 
     /* This function does nothing but it could have been a good place to
@@ -257,7 +314,12 @@ var Engine = (function(global) {
         'images/grass-block.png',
         'images/enemy-bug-r.png',
         'images/enemy-bug-l.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/gem-orange-small.png',
+        'images/gem-blue-small.png',
+        'images/gem-green-small.png',
+        'images/star-small.png',
+        'images/heart-small.png'
     ]);
     Resources.onReady(init);
 
