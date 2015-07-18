@@ -1,6 +1,6 @@
 
  // Toggle this value to show FPS and entity collision boxes
-var DEBUG = false;
+var DEBUG = true;
 
 ////////////////////////////////
 // Define Constant variables  //
@@ -13,7 +13,7 @@ var XMIN = -17,
 var E_XMIN = -100,
     E_XMAX = 505,
     E_YMIN = 30,
-    E_YMAX = 240,
+    E_YMAX = 330,
     E_RIGHT = 'images/enemy-bug-r.png',
     E_LEFT = 'images/enemy-bug-l.png';
 
@@ -134,10 +134,11 @@ Enemy.prototype.randomDirection = function () {
 var Player = function(){
     // the 'box' will be used for collision detection
     this.setBox(34, 122, 34, 17);
-
+    // reset sets the initial position of the player
+    this.reset();
     this.img = 'images/char-boy.png';
-    this.x = 200;
-    this.y = 300;
+    // this.img = E_RIGHT;
+
     this.speed = 120; // measured in pixels per second
     this.score = 0.0;
     this.lives = 3;
@@ -175,7 +176,7 @@ Player.prototype.handleInput = function(dt) {
 // Resets the position of the player when he dies.
 Player.prototype.reset = function() {
     this.x = 200;
-    this.y = 300;
+    this.y = 405;
 }
 
 // this method keeps the player from going off the screen

@@ -169,7 +169,7 @@ var Engine = (function(global) {
                 'images/stone-block.png',   // Row 1 of 3 of stone
                 'images/stone-block.png',   // Row 2 of 3 of stone
                 'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/grass-block.png',   // Row 1 of 2 of grass
+                'images/stone-block.png',   // Row 1 of 2 of grass
                 'images/grass-block.png'    // Row 2 of 2 of grass
             ],
             numRows = 6,
@@ -221,10 +221,10 @@ var Engine = (function(global) {
     function renderDebugStats(){
         ctx.fillStyle = 'black';
         ctx.font = '14px Monospace';
-        ctx.fillText('x: '+ player.x.toFixed(0) , 5, 19);
-        ctx.fillText('y: '+ player.y.toFixed(0) , 5, 33);
+        ctx.fillText('x: '+ player.x.toFixed(0) , 350, 19);
+        ctx.fillText('y: '+ player.y.toFixed(0) , 350, 33);
 
-        ctx.fillText('fps: ' + fpsManager.fps.toFixed(1), 70, 19);
+        ctx.fillText('fps: ' + fpsManager.fps.toFixed(1), 420, 19);
     }
 
     // display the player's score and # of lives
