@@ -210,7 +210,7 @@ var Engine = (function(global) {
         renderEntities();
         // items are rendered on top of entities only have the time
         // to produce a flashing effect when items are covered up
-        // if (itemFlashManager.flashing){renderItems();}
+        if (itemFlashManager.flashing){renderItems();}
 
         renderPlayerStats()
 
