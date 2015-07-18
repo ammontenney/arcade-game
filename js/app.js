@@ -1,12 +1,12 @@
 
  // Toggle this value to show FPS and entity collision boxes
-var DEBUG = true;
+var DEBUG = false;
 
 ////////////////////////////////
 // Define Constant variables  //
 ////////////////////////////////
 var XMIN = -17,
-    YMIN = -13,
+    YMIN = -70, //-13,
     XMAX = 420,
     YMAX = 405;
 
@@ -16,6 +16,9 @@ var E_XMIN = -100,
     E_YMAX = 330,
     E_RIGHT = 'images/enemy-bug-r.png',
     E_LEFT = 'images/enemy-bug-l.png';
+
+var BOY = 'images/char-boy.png',
+    BOY_STAR = 'images/char-boy-star.png';
 
 var DIR_R = 1,
     DIR_L = -1;
@@ -30,7 +33,7 @@ var LT = -1,
 /////////////////////////////////////////////////////////////
 var Sprite = function(){
     this.setBox(0,0,1,1);
-}
+};
 
 // This identifies the area withing a sprite that will be
 // used to calculate collision
@@ -39,7 +42,7 @@ Sprite.prototype.setBox = function(x,y,w,h){
     this.boxOffsetY = y;
     this.boxWidth = w;
     this.boxHeight = h;
-}
+};
 
 // Returns an object of the collision box with the properties:
 // x, y, width, height
@@ -50,7 +53,7 @@ Sprite.prototype.box = function(){
     box.width = this.boxWidth;
     box.height = this.boxHeight;
     return box;
-}
+};
 
 // Compares the boxes of two Sprites and returns true if they collide
 Sprite.prototype.collides = function(otherSprite){
@@ -64,7 +67,7 @@ Sprite.prototype.collides = function(otherSprite){
     { return true; }
 
     return false;
-}
+};
 
 ///////////////////////////////////////////////////////
 // Enemies our player must avoid. Subclass of Sprite //
@@ -79,7 +82,7 @@ var Enemy = function() {
         // this.img = the image for the bug (E_RIGHT or E_LEFT)
         // this.x = horizontal position
         // this.y = vertical position
-}
+};
 Enemy.prototype = Object.create(Sprite.prototype);
 Enemy.prototype.constructor = Enemy;
 
@@ -89,12 +92,12 @@ Enemy.prototype.update = function(dt) {
     var incr = this.speed * dt * this.direction;
     this.x += incr;
     if (this.exceedsMinMax()) {this.reset();}
-}
+};
 
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.img), this.x, this.y);
-}
+};
 
 // for a new enemy or an enemy that has moved off the screen we reset
 // that enemy with new randomized properties
@@ -108,24 +111,24 @@ Enemy.prototype.reset = function () {
 
     // move the enemy to the side opposite to the direction it is traveling
     this.x = (this.direction===DIR_R) ? E_XMIN : E_XMAX;
-}
+};
 
 // determine if the enemy has moved off the screen
 // returns TRUE when the enemy needs to be reset
 Enemy.prototype.exceedsMinMax = function () {
     if (this.x < E_XMIN || this.x > E_XMAX) {return true;}
     return false;
-}
+};
 
 Enemy.prototype.randomY = function () {
     return Math.random() * (E_YMAX - E_YMIN) + E_YMIN;
-}
+};
 
 Enemy.prototype.randomDirection = function () {
     var rand = randomNumber(1,2);
     if (rand === 1){return 1}
     else {return -1;}
-}
+};
 
 
 //////////////////////////////////////
@@ -136,11 +139,12 @@ var Player = function(){
     this.setBox(34, 122, 34, 17);
     // reset sets the initial position of the player
     this.reset();
-    this.img = 'images/char-boy.png';
+    this.img = BOY;
     // this.img = E_RIGHT;
 
     this.speed = 120; // measured in pixels per second
     this.score = 0.0;
+    this.noKillTime = 0.0;
     this.lives = 3;
 };
 Player.prototype = Object.create(Sprite.prototype);
@@ -148,6 +152,13 @@ Player.prototype.constructor = Player;
 
 Player.prototype.update = function(dt) {
     this.handleInput(dt);
+    if (this.noKillTime > 0.0){
+        this.noKillTime -= dt;
+        this.img = BOY_STAR;
+    }
+    else {
+        this.img = BOY;
+    }
 };
 
 Player.prototype.render = function() {
@@ -177,16 +188,21 @@ Player.prototype.handleInput = function(dt) {
 Player.prototype.reset = function() {
     this.x = 200;
     this.y = 405;
-}
+};
 
 // this method keeps the player from going off the screen
-Player.prototype.checkMinMax = function () {
+Player.prototype.checkMinMax = function(){
     if (this.x < XMIN) {this.x=XMIN;}
     if (this.x > XMAX) {this.x=XMAX;}
 
     if (this.y < YMIN) {this.y=YMIN;}
     if (this.y > YMAX) {this.y=YMAX;}
-}
+};
+
+Player.prototype.invincible = function(){
+    if (this.noKillTime > 0.0){ return true; }
+    else { return false; }
+};
 
 ////////////////////////////////////////////////////
 // Items that the Player can pickup to get points //
@@ -201,75 +217,97 @@ var GEM_G = 'images/gem-green-small.png',
 
 var Item = function(){
     this.setBox(0, 0, 24, 26);
-    this.assignRandomItemType();
+    this.type = this.randomType();
+    this.initializeItem();
 
     // give the new item a random location
     this.x = this.randomX();
     this.y = this.randomY();
-}
+
+    // Gems in the water have a longer lifespan
+    if (this.collides(waterArea) &&
+        this.type !== 'heart' &&
+        this.type !=='star'){ this.lifespan = 30; }
+};
 Item.prototype = Object.create(Sprite.prototype);
 Item.prototype.constructor = Item;
 
-Item.prototype.assignRandomItemType = function(){
-    var itemType = this.randomType();
-
-    if (itemType === 'green'){
-        this.initialize(GEM_G, 50, 3);
+Item.prototype.initializeItem = function(){
+    if (this.type === 'star'){
+        this.initialize(STAR, 0, 3);
+        this.action = function(){player.noKillTime = 10;}
     }
-    else if (itemType === 'blue'){
+    else if (this.type === 'heart'){
+        this.initialize(HEART, 0, 3);
+        this.action = function(){player.lives++;}
+    }
+    else if (this.type === 'orange'){
+        this.initialize(GEM_O, 50, 3);
+    }
+    else if (this.type === 'blue'){
         this.initialize(GEM_B, 25, 4.5);
     }
-    else if (itemType === 'orange'){
-        this.initialize(GEM_O, 10, 6);
+    else { // (this.type === 'green')
+        this.initialize(GEM_G, 10, 6);
     }
-}
+};
+
+Item.prototype.action = function(){
+    player.score += this.value;
+};
 
 Item.prototype.randomType = function(){
     var num = randomNumber(1,100);
 
-    // probability: 25% green, 25% blue, 50% orange
-    if (num > 75){ return 'green';}
+    // probability of each item by percentage
+    // star = 5%
+    // heart = 5%
+    // orange = 15%
+    // blue = 25%
+    // green = 50%
+    if (num > 95){ return 'star';}
+    else if (num > 90){ return 'heart';}
+    else if (num > 75){ return 'orange';}
     else if (num > 50){ return 'blue';}
-    else { return 'orange'};
-}
+    else { return 'green'};
+};
 
 Item.prototype.initialize = function(img, pts, lifespan){
     this.img = img;
     this.value = pts;
     this.lifespan = lifespan;
     this.age = 0.0;
-}
+};
 
 Item.prototype.randomX = function(){
     // x min = 0
     // x max = 480
     return randomNumber(0, 480);
-}
+};
 
 Item.prototype.randomY = function(){
     // y min = 50
     // y max = 515
     return randomNumber(50, 515);
-}
+};
 
 Item.prototype.update = function(dt){
     this.age += dt;
-}
+};
 
 Item.prototype.render = function(){
     ctx.drawImage(Resources.get(this.img), this.x, this.y);
-}
+};
 
 Item.prototype.reset = function(){
     // noop
-}
+};
 
 // lets us know when a item should disappear from the screen
 Item.prototype.expired = function(){
-    if (this.collides(waterArea)) {return false;}
     if (this.age>this.lifespan) {return true;}
     return false;
-}
+};
 
 ////////////////////////////////////////////////////////////////////////////
 // Below are general purpose functions that are used by the classes above //
@@ -298,14 +336,6 @@ itemGenerator.update = function(dt){
     }
 };
 
-// Stars!
-// x,y min =
-// x,y max =
-
-
-// Hearts!
-// x,y min =
-// x,y max =
 
 //////////////////////////////////////////////////////////////////////
 // This object is used to control the alternating of when items are //
@@ -338,32 +368,37 @@ fpsManager.update = function(dt){
         this.time = 0.0;
         this.frames = 0.0;
     }
-}
+};
 
 
 /////////////////////////////////////
 // Here we instantiate our objects //
 /////////////////////////////////////
-
+var player = {};
 var allEntities = [];
-
-var player = new Player();
-allEntities.push(player);
-
-for (var i=0; i<5; i++) {
-    allEntities.push(new Enemy());
-}
-
 var allItems = [];
 
-
-var waterArea = new Sprite()
+var waterArea = new Sprite();
 waterArea.x = 0;
 waterArea.y = 0;
 waterArea.width = 505;
 waterArea.height = 130;
 waterArea.setBox(0,0,505,130);
 
+initializeApp();
+
+function initializeApp(){
+    player = new Player();
+
+    allEntities = [];
+    allEntities.push(player);
+
+    for (var i=0; i<5; i++) {
+        allEntities.push(new Enemy());
+    }
+
+    allItems = [];
+}
 
 
 

@@ -118,20 +118,31 @@ var Engine = (function(global) {
     }
 
     function checkCollisions() {
-        checkWaterCollision();
-        checkEntityCollisions();
         checkItemCollisions();
+
+        if (player.invincible()){ return; }
+
+        if (checkWaterCollision() || checkEntityCollisions()){
+            player.lives--;
+            if (player.lives > 0){ player.reset() }
+            else{ reset(); }
+        }
+
+
     }
 
     function checkWaterCollision() {
-        if (waterArea.collides(player)) { reset(); }
+        if (waterArea.collides(player)) { return true; }
+        return false;
     }
 
     function checkEntityCollisions() {
-        allEntities.forEach(function(entity) {
-            if (entity === player) { return; }
-            if (entity.collides(player)) { reset(); }
-        });
+        for (var i=0; i<allEntities.length; i++){
+            var entity = allEntities[i];
+            if (entity === player) { continue; }
+            if (entity.collides(player)) {return true;}
+        }
+        return false;
     }
 
     function checkItemCollisions(){
@@ -140,7 +151,7 @@ var Engine = (function(global) {
 
         while (item = allItems.pop()){
             if (item.collides(player)){
-                player.score += item.value;
+                item.action();
                 continue;
             }
             tempItems.push(item);
@@ -166,11 +177,11 @@ var Engine = (function(global) {
          */
         var rowImages = [
                 'images/water-block.png',   // Top row is water
-                'images/stone-block.png',   // Row 1 of 3 of stone
-                'images/stone-block.png',   // Row 2 of 3 of stone
-                'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/stone-block.png',   // Row 1 of 2 of grass
-                'images/grass-block.png'    // Row 2 of 2 of grass
+                'images/grass-block.png',   // Row 1 of 3 of stone
+                'images/grass-block.png',   // Row 2 of 3 of stone
+                'images/grass-block.png',   // Row 3 of 3 of stone
+                'images/grass-block.png',   // Row 1 of 2 of grass
+                'images/stone-block.png'    // Row 2 of 2 of grass
             ],
             numRows = 6,
             numCols = 5,
@@ -199,7 +210,7 @@ var Engine = (function(global) {
         renderEntities();
         // items are rendered on top of entities only have the time
         // to produce a flashing effect when items are covered up
-        if (itemFlashManager.flashing){renderItems();}
+        // if (itemFlashManager.flashing){renderItems();}
 
         renderPlayerStats()
 
@@ -225,6 +236,7 @@ var Engine = (function(global) {
         ctx.fillText('y: '+ player.y.toFixed(0) , 350, 33);
 
         ctx.fillText('fps: ' + fpsManager.fps.toFixed(1), 420, 19);
+        ctx.fillText('NKT: ' + player.noKillTime.toFixed(1), 420, 33);
     }
 
     // display the player's score and # of lives
@@ -297,9 +309,10 @@ var Engine = (function(global) {
 
     // resets the player and the enemies
     function reset() {
-        allEntities.forEach( function(entity){
-            entity.reset();
-        });
+        initializeApp();
+        // allEntities.forEach( function(entity){
+        //     entity.reset();
+        // });
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -313,6 +326,7 @@ var Engine = (function(global) {
         'images/enemy-bug-r.png',
         'images/enemy-bug-l.png',
         'images/char-boy.png',
+        'images/char-boy-star.png',
         'images/gem-orange-small.png',
         'images/gem-blue-small.png',
         'images/gem-green-small.png',
