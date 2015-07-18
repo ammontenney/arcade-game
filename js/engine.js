@@ -46,7 +46,7 @@ var Engine = (function(global) {
          * our update function since it may be used for smooth animation.
          */
         update(dt);
-        render(dt);
+        render();
 
         /* Set our lastTime variable which is used to determine the time delta
          * for the next time this function is called.
@@ -83,33 +83,34 @@ var Engine = (function(global) {
         updateItems(dt);
         checkCollisions();
 
-        updateStats(dt);
+        debugFPSManager.update(dt);
         gemGenerator.update(dt);
+        itemFlashManager.update(dt);
+
     }
 
     // This is to track the FPS at which the game is refershing
     // I added this just because I wanted to know how the browser
     // was performing. :)
-    var fpsTime = 0.0,
-        fpsFrames = 0,
-        fps = 0.0;
-
-    function updateStats(dt) {
-        fpsTime += dt;
-        fpsFrames++;
-        if (fpsTime>1.0){
-            fps = fpsFrames / fpsTime;
-            fpsTime = 0;
-            fpsFrames = 0;
-        }
-    }
+    // var fpsTime = 0.0,
+    //     fpsFrames = 0,
+    //     fps = 0.0;
+    //
+    // function updateStats(dt) {
+    //     fpsTime += dt;
+    //     fpsFrames++;
+    //     if (fpsTime>1.0){
+    //         fps = fpsFrames / fpsTime;
+    //         fpsTime = 0;
+    //         fpsFrames = 0;
+    //     }
+    // }
 
     /* This is called by the update function  and loops through all of the
-     * objects within your allEnemies array as defined in app.js and calls
-     * their update() methods. It will then call the update function for your
-     * player object. These update methods should focus purely on updating
-     * the data/properties related to  the object. Do your drawing in your
-     * render methods.
+     * objects within the allEntities array as defined in app.js and calls
+     * their update() methods. Entities include bothe the enemies and the
+     * player. These update methods focus purely on updating the data/properties
+     * related to  the object. Drawing is done in the render methods.
      */
     function updateEntities(dt) {
         allEntities.forEach(function(entity) {
@@ -117,6 +118,9 @@ var Engine = (function(global) {
         });
     }
 
+    // gems are popped out our allGems, updated, and pushed into
+    // another array that become the new allGems. *The second
+    // array allows us to skip pushing a gem if it has expired
     function updateItems(dt){
         var tempGems = [];
         var gem = {};
@@ -131,33 +135,28 @@ var Engine = (function(global) {
     }
 
     function checkCollisions() {
-        var pBox = calcBox(player);
-        checkWaterCollision(pBox);
-        checkEntityCollisions(pBox);
-        checkGemCollisions(pBox);
+        checkWaterCollision();
+        checkEntityCollisions();
+        checkGemCollisions();
     }
 
-    var waterBox = {'x':0, 'y':0, 'width':505, 'height':130};
-    function checkWaterCollision(pBox) {
-        if (boxesCollide(pBox, waterBox)) { reset(); }
+    function checkWaterCollision() {
+        if (waterArea.collides(player)) { reset(); }
     }
 
-    function checkEntityCollisions(pBox) {
+    function checkEntityCollisions() {
         allEntities.forEach(function(entity) {
             if (entity === player) { return; }
-
-            var box = calcBox(entity);
-            if (boxesCollide(pBox, box)) { reset(); }
+            if (entity.collides(player)) { reset(); }
         });
     }
 
-    function checkGemCollisions(pBox){
+    function checkGemCollisions(){
         var tempGems = [];
         var gem = {};
 
         while (gem = allGems.pop()){
-            var gemBox = calcBox(gem);
-            if (boxesCollide(pBox, gemBox)){
+            if (gem.collides(player)){
                 player.score += gem.value;
                 continue;
             }
@@ -173,7 +172,7 @@ var Engine = (function(global) {
      * they are flipbooks creating the illusion of animation but in reality
      * they are just drawing the entire screen over and over.
      */
-    function render(dt) {
+    function render() {
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
@@ -206,36 +205,30 @@ var Engine = (function(global) {
             }
         }
 
+        // items are always drawn behind the entities
         renderItems();
-
+        // entities are rendered on top of items
         renderEntities();
+        // items are rendered on top of entities only have the time
+        // to produce a flashing effect when items are covered up
+        if (itemFlashManager.flashing){renderItems();}
 
         if (DEBUG) {
-            renderStats();
+            renderDebugStats();
             renderBoxes();
         }
     }
 
-
+    // render the gems on the screen
     function renderItems(){
         allGems.sort(compareEntities);
         allGems.forEach(function(gem) {
             gem.render();
         });
     }
-    //
-    // var toggleRender = false;
-    // var itemTime = 0.0;
-    // function alternateRenderItems(dt){
-    //     itemTime += dt;
-    //     if (itemTime > 0.15){
-    //         itemTime = 0;
-    //         toggleRender = toggleRender ? false : true;
-    //     }
-    //     return toggleRender;
-    // }
 
-    function renderStats() {
+    // render stats for debugging purposes: player position & FPS
+    function renderDebugStats() {
         ctx.fillStyle = 'gray';
         ctx.fillRect(0, 0, 150, 40);
 
@@ -244,7 +237,7 @@ var Engine = (function(global) {
         ctx.fillText('x: '+ player.x.toFixed(0) , 5, 19);
         ctx.fillText('y: '+ player.y.toFixed(0) , 5, 33);
 
-        ctx.fillText('fps: ' + fps.toFixed(1), 70, 19);
+        ctx.fillText('fps: ' + debugFPSManager.fps.toFixed(1), 70, 19);
     }
 
     /* This function is called by the render function and is called on each game
@@ -252,9 +245,6 @@ var Engine = (function(global) {
      * on your enemy and player entities within app.js
      */
     function renderEntities() {
-        /* Loop through all of the objects within the allEnemies array and call
-         * the render function you have defined.
-         */
         allEntities.sort(compareEntities);
         allEntities.forEach(function(entity) {
             entity.render();
@@ -263,18 +253,28 @@ var Engine = (function(global) {
 
     }
 
+    // this is a function for debugging purposes.
+    // it renders the collision box for everything that is on the screen
     function renderBoxes() {
         ctx.save();
         ctx.strokeStyle = 'red';
         ctx.lineWidth = '1';
 
-        allEntities.forEach(function(entity) {
-            var box = calcBox(entity);
+        allEntities.forEach(function(entity){
+            var box = entity.box();
             ctx.beginPath();
             ctx.rect(box.x, box.y, box.width, box.height);
             ctx.stroke();
         });
 
+        allGems.forEach(function(gem){
+            var box = gem.box();
+            ctx.beginPath();
+            ctx.rect(box.x, box.y, box.width, box.height);
+            ctx.stroke();
+        });
+
+        var waterBox = waterArea.box();
         ctx.beginPath();
         ctx.rect(waterBox.x, waterBox.y, waterBox.width, waterBox.height);
         ctx.stroke();
@@ -286,18 +286,15 @@ var Engine = (function(global) {
     // on the screen in the correct order. This way those that are in back aren't
     // drawn over those that are in the front.
     function compareEntities(a,b) {
-        var boxA= calcBox(a);
-        var boxB= calcBox(b);
+        var boxA= a.box();
+        var boxB= b.box();
 
         if (boxA.y < boxB.y) { return LT;}
         if (boxA.y > boxB.y) { return GT;}
         if (boxA.y === boxB.y) { return EQ;}
     }
 
-    /* This function does nothing but it could have been a good place to
-     * handle game reset states - maybe a new game menu or a game over screen
-     * those sorts of things. It's only called once by the init() method.
-     */
+    // resets the player and the enemies
     function reset() {
         allEntities.forEach( function(entity){
             entity.reset();
