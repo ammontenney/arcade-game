@@ -156,6 +156,11 @@ var Engine = (function(global) {
      * they are just drawing the entire screen over and over.
      */
     function render() {
+        // paint the cavas white. this will cover up any old text before we
+        // draw new text later on.
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
         /* This array holds the relative URL to the image used
          * for that particular row of the game level.
          */
@@ -196,6 +201,8 @@ var Engine = (function(global) {
         // to produce a flashing effect when items are covered up
         if (itemFlashManager.flashing){renderItems();}
 
+        renderPlayerStats()
+
         if (DEBUG) {
             renderDebugStats();
             renderBoxes();
@@ -211,10 +218,7 @@ var Engine = (function(global) {
     }
 
     // render stats for debugging purposes: player position & FPS
-    function renderDebugStats() {
-        ctx.fillStyle = 'gray';
-        ctx.fillRect(0, 0, 150, 40);
-
+    function renderDebugStats(){
         ctx.fillStyle = 'black';
         ctx.font = '14px Monospace';
         ctx.fillText('x: '+ player.x.toFixed(0) , 5, 19);
@@ -223,11 +227,25 @@ var Engine = (function(global) {
         ctx.fillText('fps: ' + fpsManager.fps.toFixed(1), 70, 19);
     }
 
+    // display the player's score and # of lives
+    function renderPlayerStats(){
+        ctx.fillStyle = 'black';
+        ctx.font = '14px Monospace';
+        ctx.fillText('Lives: '+ player.lives , 5, 19);
+        ctx.fillText('Score: '+ numberWithCommas(player.score) , 5, 33);
+    }
+
+    // Copied this off of StackOverflow.
+    // Courtesy of Elias Zamaria
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
     /* This function is called by the render function and is called on each game
      * tick. It's purpose is to then call the render functions you have defined
      * on your enemy and player entities within app.js
      */
-    function renderEntities() {
+    function renderEntities(){
         allEntities.sort(compareEntities);
         allEntities.forEach(function(entity) {
             entity.render();

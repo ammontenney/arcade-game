@@ -140,6 +140,7 @@ var Player = function(){
     this.y = 300;
     this.speed = 120; // measured in pixels per second
     this.score = 0.0;
+    this.lives = 3;
 };
 Player.prototype = Object.create(Sprite.prototype);
 Player.prototype.constructor = Player;
@@ -287,7 +288,7 @@ function randomNumber(min, max) {
 var gemGenerator = {'time':0.0};
 gemGenerator.update = function(dt){
     this.time += dt;
-    if (this.time > 2.0){
+    if (this.time > 1.0){
         this.time = 0.0;
         allGems.push(new Gem());
     }
@@ -313,7 +314,7 @@ gemGenerator.update = function(dt){
 var itemFlashManager = {'flashing':false, 'time':0.0};
 itemFlashManager.update = function(dt){
     this.time += dt;
-    if (this.time > 0.05){
+    if (this.time > 0.1){
         this.time = 0;
         this.flashing = this.flashing ? false : true;
     }
