@@ -84,7 +84,7 @@ var Engine = (function(global) {
         checkCollisions();
 
         fpsManager.update(dt);
-        gemGenerator.update(dt);
+        itemGenerator.update(dt);
         itemFlashManager.update(dt);
 
     }
@@ -101,26 +101,26 @@ var Engine = (function(global) {
         });
     }
 
-    // gems are popped out our allGems, updated, and pushed into
-    // another array that become the new allGems. *The second
-    // array allows us to skip pushing a gem if it has expired
+    // items are popped out our allItems array, updated, and pushed
+    // into another array that become the new allItems. *The second
+    // array allows us to skip pushing an item if it has expired
     function updateItems(dt){
-        var tempGems = [];
-        var gem = {};
+        var tempItems = [];
+        var item = {};
 
-        while (gem = allGems.pop()){
-            gem.update(dt);
-            if (gem.expired()) {continue;}
-            tempGems.push(gem);
+        while (item = allItems.pop()){
+            item.update(dt);
+            if (item.expired()) {continue;}
+            tempItems.push(item);
         }
 
-        allGems = tempGems;
+        allItems = tempItems;
     }
 
     function checkCollisions() {
         checkWaterCollision();
         checkEntityCollisions();
-        checkGemCollisions();
+        checkItemCollisions();
     }
 
     function checkWaterCollision() {
@@ -134,19 +134,19 @@ var Engine = (function(global) {
         });
     }
 
-    function checkGemCollisions(){
-        var tempGems = [];
-        var gem = {};
+    function checkItemCollisions(){
+        var tempItems = [];
+        var item = {};
 
-        while (gem = allGems.pop()){
-            if (gem.collides(player)){
-                player.score += gem.value;
+        while (item = allItems.pop()){
+            if (item.collides(player)){
+                player.score += item.value;
                 continue;
             }
-            tempGems.push(gem);
+            tempItems.push(item);
         }
 
-        allGems = tempGems;
+        allItems = tempItems;
     }
 
     /* This function initially draws the "game level", it will then call
@@ -209,11 +209,11 @@ var Engine = (function(global) {
         }
     }
 
-    // render the gems on the screen
+    // render the items on the screen
     function renderItems(){
-        allGems.sort(compareEntities);
-        allGems.forEach(function(gem) {
-            gem.render();
+        allItems.sort(compareEntities);
+        allItems.forEach(function(item) {
+            item.render();
         });
     }
 
@@ -268,8 +268,8 @@ var Engine = (function(global) {
             ctx.stroke();
         });
 
-        allGems.forEach(function(gem){
-            var box = gem.box();
+        allItems.forEach(function(item){
+            var box = item.box();
             ctx.beginPath();
             ctx.rect(box.x, box.y, box.width, box.height);
             ctx.stroke();

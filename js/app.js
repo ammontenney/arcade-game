@@ -24,10 +24,10 @@ var LT = -1,
     EQ = 0,
     GT = 1;
 
-////////////////////////////////////////////////////////////
-// The Player, Enemy, and Gem classes inherit from Sprite //
-// Sprite's main purpose is to enable collision detection //
-////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+// The Player, Enemy, and Item classes inherit from Sprite //
+// Sprite's main purpose is to enable collision detection  //
+/////////////////////////////////////////////////////////////
 var Sprite = function(){
     this.setBox(0,0,1,1);
 }
@@ -188,41 +188,43 @@ Player.prototype.checkMinMax = function () {
     if (this.y > YMAX) {this.y=YMAX;}
 }
 
-///////////////////////////////////////////////////
-// Gems that the Player can pickup to get points //
-///////////////////////////////////////////////////
+////////////////////////////////////////////////////
+// Items that the Player can pickup to get points //
+////////////////////////////////////////////////////
 
 // A few more constants for our sprite images
 var GEM_G = 'images/gem-green-small.png',
     GEM_B = 'images/gem-blue-small.png',
-    GEM_O = 'images/gem-orange-small.png';
+    GEM_O = 'images/gem-orange-small.png',
+    HEART = 'images/heart-small.png',
+    STAR  = 'images/star-small.png';
 
-var Gem = function(){
+var Item = function(){
     this.setBox(0, 0, 24, 26);
-    this.assignRandomGemType();
+    this.assignRandomItemType();
 
-    // give the new gem a random location
+    // give the new item a random location
     this.x = this.randomX();
     this.y = this.randomY();
 }
-Gem.prototype = Object.create(Sprite.prototype);
-Gem.prototype.constructor = Gem;
+Item.prototype = Object.create(Sprite.prototype);
+Item.prototype.constructor = Item;
 
-Gem.prototype.assignRandomGemType = function(){
-    var gemColor = this.randomGemColor();
+Item.prototype.assignRandomItemType = function(){
+    var itemType = this.randomType();
 
-    if (gemColor === 'green'){
+    if (itemType === 'green'){
         this.initialize(GEM_G, 50, 3);
     }
-    else if (gemColor === 'blue'){
+    else if (itemType === 'blue'){
         this.initialize(GEM_B, 25, 4.5);
     }
-    else if (gemColor === 'orange'){
+    else if (itemType === 'orange'){
         this.initialize(GEM_O, 10, 6);
     }
 }
 
-Gem.prototype.randomGemColor = function(){
+Item.prototype.randomType = function(){
     var num = randomNumber(1,100);
 
     // probability: 25% green, 25% blue, 50% orange
@@ -231,39 +233,39 @@ Gem.prototype.randomGemColor = function(){
     else { return 'orange'};
 }
 
-Gem.prototype.initialize = function(img, pts, lifespan){
+Item.prototype.initialize = function(img, pts, lifespan){
     this.img = img;
     this.value = pts;
     this.lifespan = lifespan;
     this.age = 0.0;
 }
 
-Gem.prototype.randomX = function(){
+Item.prototype.randomX = function(){
     // x min = 0
     // x max = 480
     return randomNumber(0, 480);
 }
 
-Gem.prototype.randomY = function(){
+Item.prototype.randomY = function(){
     // y min = 50
     // y max = 515
     return randomNumber(50, 515);
 }
 
-Gem.prototype.update = function(dt){
+Item.prototype.update = function(dt){
     this.age += dt;
 }
 
-Gem.prototype.render = function(){
+Item.prototype.render = function(){
     ctx.drawImage(Resources.get(this.img), this.x, this.y);
 }
 
-Gem.prototype.reset = function(){
+Item.prototype.reset = function(){
     // noop
 }
 
-// lets us know when a gem should disappear from the screen
-Gem.prototype.expired = function(){
+// lets us know when a item should disappear from the screen
+Item.prototype.expired = function(){
     if (this.collides(waterArea)) {return false;}
     if (this.age>this.lifespan) {return true;}
     return false;
@@ -285,14 +287,14 @@ function randomNumber(min, max) {
 }
 
 /////////////////////////////////////////////////////////////////////
-// The gemGenerator is used to produce random gems every 2 seconds //
+// The itemGenerator is used to produce random items every second  //
 /////////////////////////////////////////////////////////////////////
-var gemGenerator = {'time':0.0};
-gemGenerator.update = function(dt){
+var itemGenerator = {'time':0.0};
+itemGenerator.update = function(dt){
     this.time += dt;
     if (this.time > 1.0){
         this.time = 0.0;
-        allGems.push(new Gem());
+        allItems.push(new Item());
     }
 };
 
@@ -352,7 +354,7 @@ for (var i=0; i<5; i++) {
     allEntities.push(new Enemy());
 }
 
-var allGems = [];
+var allItems = [];
 
 
 var waterArea = new Sprite()
