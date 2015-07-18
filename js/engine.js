@@ -83,28 +83,11 @@ var Engine = (function(global) {
         updateItems(dt);
         checkCollisions();
 
-        debugFPSManager.update(dt);
+        fpsManager.update(dt);
         gemGenerator.update(dt);
         itemFlashManager.update(dt);
 
     }
-
-    // This is to track the FPS at which the game is refershing
-    // I added this just because I wanted to know how the browser
-    // was performing. :)
-    // var fpsTime = 0.0,
-    //     fpsFrames = 0,
-    //     fps = 0.0;
-    //
-    // function updateStats(dt) {
-    //     fpsTime += dt;
-    //     fpsFrames++;
-    //     if (fpsTime>1.0){
-    //         fps = fpsFrames / fpsTime;
-    //         fpsTime = 0;
-    //         fpsFrames = 0;
-    //     }
-    // }
 
     /* This is called by the update function  and loops through all of the
      * objects within the allEntities array as defined in app.js and calls
@@ -237,7 +220,7 @@ var Engine = (function(global) {
         ctx.fillText('x: '+ player.x.toFixed(0) , 5, 19);
         ctx.fillText('y: '+ player.y.toFixed(0) , 5, 33);
 
-        ctx.fillText('fps: ' + debugFPSManager.fps.toFixed(1), 70, 19);
+        ctx.fillText('fps: ' + fpsManager.fps.toFixed(1), 70, 19);
     }
 
     /* This function is called by the render function and is called on each game

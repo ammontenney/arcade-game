@@ -324,8 +324,8 @@ itemFlashManager.update = function(dt){
 // is performing. This is helpful in identifying changes that //
 // impact performance of the game.                            //
 ////////////////////////////////////////////////////////////////
-var debugFPSManager = {'time':0.0, 'frames':0.0, 'fps':0.0};
-debugFPSManager.update = function(dt){
+var fpsManager = {'time':0.0, 'frames':0.0, 'fps':0.0};
+fpsManager.update = function(dt){
     this.time += dt;
     this.frames++;
     if (this.time>1.0){
