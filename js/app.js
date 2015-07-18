@@ -263,6 +263,7 @@ Gem.prototype.reset = function(){
 
 // lets us know when a gem should disappear from the screen
 Gem.prototype.expired = function(){
+    if (this.collides(waterArea)) {return false;}
     if (this.age>this.lifespan) {return true;}
     return false;
 }
@@ -314,7 +315,7 @@ gemGenerator.update = function(dt){
 var itemFlashManager = {'flashing':false, 'time':0.0};
 itemFlashManager.update = function(dt){
     this.time += dt;
-    if (this.time > 0.1){
+    if (this.time > 0.2){
         this.time = 0;
         this.flashing = this.flashing ? false : true;
     }
