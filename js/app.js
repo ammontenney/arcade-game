@@ -2,6 +2,11 @@
  // Toggle this value to show FPS and entity collision boxes
 var DEBUG = false;
 
+/* global ctx */
+/* global Resources */
+/* global document */
+
+
 ////////////////////////////////
 // Define Constant variables  //
 ////////////////////////////////
@@ -23,9 +28,7 @@ var BOY = 'images/char-boy.png',
 var DIR_R = 1,
     DIR_L = -1;
 
-var LT = -1,
-    EQ = 0,
-    GT = 1;
+
 
 /////////////////////////////////////////////////////////////
 // The Player, Enemy, and Item classes inherit from Sprite //
@@ -126,8 +129,8 @@ Enemy.prototype.randomY = function () {
 
 Enemy.prototype.randomDirection = function () {
     var rand = randomNumber(1,2);
-    if (rand === 1){return 1}
-    else {return -1;}
+    if (rand === 1){return DIR_R;}
+    else {return DIR_L;}
 };
 
 
@@ -235,11 +238,11 @@ Item.prototype.constructor = Item;
 Item.prototype.initializeItem = function(){
     if (this.type === 'star'){
         this.initialize(STAR, 0, 3);
-        this.action = function(){player.noKillTime = 10;}
+        this.action = function(){player.noKillTime = 10;};
     }
     else if (this.type === 'heart'){
         this.initialize(HEART, 0, 3);
-        this.action = function(){player.lives++;}
+        this.action = function(){player.lives++;};
     }
     else if (this.type === 'orange'){
         this.initialize(GEM_O, 50, 3);
@@ -269,7 +272,7 @@ Item.prototype.randomType = function(){
     else if (num > 90){ return 'heart';}
     else if (num > 75){ return 'orange';}
     else if (num > 50){ return 'blue';}
-    else { return 'green'};
+    else { return 'green';}
 };
 
 Item.prototype.initialize = function(img, pts, lifespan){

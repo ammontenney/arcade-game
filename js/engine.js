@@ -1,3 +1,4 @@
+
 /* Engine.js
  * This file provides the game loop functionality (update entities and render),
  * draws the initial game board on the screen, and then calls the update and
@@ -13,6 +14,19 @@
  * the canvas' context (ctx) object globally available to make writing app.js
  * a little simpler to work with.
  */
+
+/* global fpsManager */
+/* global itemGenerator */
+/* global itemFlashManager */
+/* global allEntities */
+/* global allItems */
+/* global player */
+/* global waterArea */
+/* global Resources */
+/* global DEBUG */
+/* global initializeApp */
+
+
 
 var Engine = (function(global) {
     /* Predefine the variables we'll be using within this scope,
@@ -57,7 +71,7 @@ var Engine = (function(global) {
          * function again as soon as the browser is able to draw another frame.
          */
         win.requestAnimationFrame(main);
-    };
+    }
 
     /* This function does some initial setup that should only occur once,
      * particularly setting the lastTime variable that is required for the
@@ -124,7 +138,7 @@ var Engine = (function(global) {
 
         if (checkWaterCollision() || checkEntityCollisions()){
             player.lives--;
-            if (player.lives > 0){ player.reset() }
+            if (player.lives > 0){ player.reset(); }
             else{ reset(); }
         }
 
@@ -212,7 +226,7 @@ var Engine = (function(global) {
         // to produce a flashing effect when items are covered up
         if (itemFlashManager.flashing){renderItems();}
 
-        renderPlayerStats()
+        renderPlayerStats();
 
         if (DEBUG) {
             renderDebugStats();
@@ -298,6 +312,9 @@ var Engine = (function(global) {
     // Use this to compare and sort all the entities so that we can draw them
     // on the screen in the correct order. This way those that are in back aren't
     // drawn over those that are in the front.
+    var LT = -1,
+        EQ = 0,
+        GT = 1;
     function compareEntities(a,b) {
         var boxA= a.box();
         var boxB= b.box();
